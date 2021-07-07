@@ -40,4 +40,34 @@ singularity exec --rocm \
 ```
 Here we export `HOME` to `/home/<username>` since the sourcing of `/etc/profile.d/horovod.sh` sets `HOME` to `/root` which messes with the configuration of MIOPen's cache database directory.
 
-Running singularity with `srun singularity exec ...` requires probably some setup on the grenoble nodes. It's not working now.
+
+## Running with OpenMPI's `mpirun`
+Running singularity with `srun singularity exec ...` is not working. It could be that the openmpi installation in the container doesn't support slurm (not sure).
+
+It can be run, however, with openmpi (installed locally) with the following batch script:
+```bash
+#!/bin/bash -l
+
+#SBATCH --job-name=test
+#SBATCH --time=00:05:00
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-core=1
+#SBATCH --ntasks-per-node=2
+##SBATCH --cpus-per-task=12
+
+# module switch PrgEnv-cray/8.0.0 PrgEnv-gnu
+
+export PATH=$HOME/software/openmpi-4.1.1/install/bin:$PATH
+export LD_LIBRARY_PATH=$HOME/software/openmpi-4.1.1/install/bin:$LD_LIBRARY_PATH
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+export NCCL_DEBUG=INFO
+
+mpirun singularity exec \
+            ~/tensorflow_rocm4.1-tf2.3-dev.sif \
+            bash -c 'cd $HOME/tf-examples/;
+                     export PYTHONPATH=$HOME/container-pip/lib/python3.6/site-packages:$PYTHONPATH;
+                     python hvd/tensorflow2_keras_synthetic_benchmark.py \
+                            --model=ResNet50 \
+                            --batch-size=256 \
+                            --num-batches-per-iter=10'
+```
