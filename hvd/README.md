@@ -53,7 +53,6 @@ It can be run, however, with openmpi (installed locally) with the following batc
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-core=1
 #SBATCH --ntasks-per-node=2
-##SBATCH --cpus-per-task=12
 
 # module switch PrgEnv-cray/8.0.0 PrgEnv-gnu
 
