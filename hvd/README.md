@@ -2,6 +2,10 @@
 
 ## [lumi-eap] Running a horovod example within a container 
 Using `amdih/tensorflow:rocm4.2-tf2.5-dev` from the [AMD Infinity Hub](https://www.amd.com/en/technologies/infinity-hub/tensorflow) with singularity.
+It can be pulled with
+```bash
+singularity pull docker://amdih/tensorflow:rocm4.2-tf2.5-dev
+```
 
 For internode communication, NCCL seems to need the following
 ```bash
