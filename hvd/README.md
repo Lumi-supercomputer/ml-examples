@@ -38,6 +38,7 @@ This gives the right number of ranks per node.
 |      2       | 725.2 +-37.8 | 1433.9 +-66.3 | 2729.1 +-222.8 |
 
 ### Notes
+ - Had to pip install `psutil` and `cloudpickle` since the container didn't have it.
  - In some cases with ResNet50, there's a rocblas error when using a batch size of 256. It could eaily be because of a too large batch:
  ```bash
  failed to run ROCBLAS routine rocblas_sgemm: rocblas_status_internal_error
