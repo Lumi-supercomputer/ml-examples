@@ -30,6 +30,13 @@ salloc -peap -N2 -Aproject_462000002 --gres=gpu:mi100:2 --time 1:00:00 --ntasks-
 ```
 This gives the right number of ranks per node.
 
+### Example: horovod - [`tensorflow2_synthetic_benchmark.py`](https://github.com/horovod/horovod/blob/19f2f2119db34b1be0d9f9aedb66106c9131da89/examples/tensorflow2/tensorflow2_synthetic_benchmark.py) - ResNet50 - batch-size=128
+
+| Nodes / GPU-node |       1      |       2       |        4       |
+|:------------:|:------------:|:-------------:|:--------------:|
+|      1       |  520.1 +-2.7 |  923.1 +-45.0 | 1783.4 +-113.9 |
+|      2       | 725.2 +-37.8 | 1433.9 +-66.3 | 2729.1 +-222.8 |
+
 ### Notes
  - In some cases with ResNet50, there's a rocblas error when using a batch size of 256. It could eaily be because of a too large batch:
  ```bash
