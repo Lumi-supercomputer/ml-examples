@@ -7,12 +7,27 @@ It can be pulled with
 singularity pull docker://amdih/tensorflow:rocm4.2-tf2.5-dev
 ```
 
-For internode communication, NCCL seems to need the following
-```bash
-export NCCL_IB_HCA=hsn0
+There are some options for `NCCL_IB_HCA`. For internode communication there is `hsn0`, which doesn't give a good scaling.
+Another posibility is `NCCL_IB_HCA=mlx5_0`, which what NCCL finds by default if nothing is set. with `NCCL_DEBUG=INFO`, the log has
 ```
-Another posibility is `NCCL_IB_HCA=mlx5_0`, which what NCCL finds by default if nothing is set. That works for multiple GPUs on a single node,
-but doesn't seem to work for multiple node. It may hang or crash with an 'unhandled error'.
+nid000014:57586:57614 [0] NCCL INFO Bootstrap : Using nmn0:10.252.1.70<0>
+nid000014:57586:57614 [0] NCCL INFO NET/Plugin : No plugin found (librccl-net.so), using internal implementation
+nid000014:57586:57614 [0] NCCL INFO NET/IB : Using [0]mlx5_0:1/RoCE ; OOB nmn0:10.252.1.70<0>
+nid000014:57586:57614 [0] NCCL INFO Using network IB
+```
+
+The cotainer needs some setup before running
+```
+export SINGULARITY_BIND='/opt/cray/libfabric/1.11.0.4.106/lib64/libfabric.so.1:/ext_cray/libfabric.so.1,/opt/cray/pe/lib64/libpmi2.so.0:/ext_cray/libpmi2.so.0,/opt/cray/pe/mpich/8.1.8/ofi/gnu/9.1/lib/libmpi_gnu_91.so.12:/ext_cray/libmpi_gnu_91.so.12,/usr/lib64/liblustreapi.so:/ext_cray/liblustreapi.so,/usr/lib64/libatomic.so.1:/usr/lib64/libatomic.so.1,/usr/lib64/libpals.so.0:/usr/lib64/libpals.so.0,/etc/libibverbs.d:/etc/libibverbs.d,/usr/lib64/libibverbs.so.1:/usr/lib/libibverbs.so.1,/var/opt/cray:/var/opt/cray,/appl:/appl,/opt/cray:/opt/cray,/usr/lib64/librdmacm.so.1:/xext_cray/librdmacm.so.1,/lib64/libtinfo.so.6:/ext_cray/libtinfo.so.6,/users/rafaelsarmiento/software/openmpi-4.1.2-install:/ext_openmpi'
+```
+Here `/usr/lib64/librdmacm.so.1` has been mounted deliberately at `xext_cray` instead of `ext_cray`.
+That's only to have that library around for further investigation without using it in the container.
+With or without it, the [rccl-test](https://github.com/ROCmSoftwarePlatform/rccl-tests) benchmark gives the same performance,
+however tensorflow hangs.
+
+```
+export SINGULARITYENV_LD_LIBRARY_PATH='/etc/libibverbs.d:/var/opt/cray/pe/pe_images/aocc-compiler/usr/lib64/libibverbs:/usr/lib64:/opt/cray/pe/lib64:/opt/gcc/10.2.0/snos/lib64:/ext_cray:/usr/lib64:/opt/cray/pe/lib64:/opt/cray/xpmem/2.2.40-2.1_3.9__g3cf3325.shasta/lib64:/ext_openmpi/lib:$LD_LIBRARY_PATH'
+```
 
 The container needs to be run with `mpirun`, which needs to be installed locally
 ```bash
@@ -37,9 +52,10 @@ This gives the right number of ranks per node.
 ### Example: horovod - [`tensorflow2_synthetic_benchmark.py`](https://github.com/horovod/horovod/blob/19f2f2119db34b1be0d9f9aedb66106c9131da89/examples/tensorflow2/tensorflow2_synthetic_benchmark.py) - ResNet50 - batch-size=128
 
 | Nodes / GPU-node |       1      |       2       |        4       |
-|:------------:|:------------:|:-------------:|:--------------:|
-|      1       |  520.1 +-2.7 |  923.1 +-45.0 | 1783.4 +-113.9 |
-|      2       | 725.2 +-37.8 | 1433.9 +-66.3 | 2729.1 +-222.8 |
+|:------------:|:----------------:|:-------------:|:--------------:|
+|      1       |  520.1 +-2.7     |  923.1 +-45.0 | 1783.4 +-113.9 |
+|      2       |  870.9 +-35.7    | 1681.3 +-66.3 | 3271.5 +-226.4 |
+
 
 ### Notes
  - Had to pip install `psutil` and `cloudpickle` since the container didn't have it.
