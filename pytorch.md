@@ -9,13 +9,7 @@ with singularity. It can be pulled with
 singularity pull docker://amdih/pytorch:rocm4.2_ubuntu18.04_py3.6_pytorch_1.9.0
 ```
 
-For internode communication, NCCL seems to need the following
-```
-export NCCL_IB_HCA=hsn0
-```
-Another posibility is NCCL_IB_HCA=mlx5_0, which what NCCL finds by default if nothing is set.
-That works for multiple GPUs on a single node, but doesn't seem to work for multiple node. It may hang or crash with an 'unhandled error'.
-
+See the [singularity setup for tensorflow+hvd](hvd/README.md).
 
 It doesn't need to be run with `mpirun`.
 With `torch.distributed`, one needs 1 rank per node.
