@@ -33,9 +33,9 @@ export SLURM_STEP_TASKS_PER_NODE=$SLURM_TASKS_PER_NODE
 srun singularity exec $SCRATCH/tensorflow_rocm5.0-tf2.7-dev.sif \
                       bash -c '
                       export LANG=en_US.utf-8;
-					  export LC_ALL=en_US.utf-8;
+		      export LC_ALL=en_US.utf-8;
                       . $HOME/tf_rocm5_env/bin/activate;
-					  python $HOME/git_/ml-examples/tensorflow/tfdist/tfdist_synthetic_benchmark.py --batch-size=256'
-					  # python $HOME/git_/ml-examples/tensorflow/tfdist/tfdist_keras_synthetic_benchmark.py --batch-size=256'
+                      python $HOME/git_/ml-examples/tensorflow/tfdist/tfdist_synthetic_benchmark.py --batch-size=256'
+                      # python $HOME/git_/ml-examples/tensorflow/tfdist/tfdist_keras_synthetic_benchmark.py --batch-size=256'
 
 echo '' | cat - $0 | head -n -1  # copy the file content to the output
