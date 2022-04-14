@@ -22,9 +22,9 @@ export SINGULARITYENV_LD_LIBRARY_PATH="/etc/libibverbs.d:/var/opt/cray/pe/pe_ima
 mpirun singularity exec $SCRATCH/tensorflow_rocm5.0-tf2.7-dev.sif \
                       bash -c '
                       export LANG=en_US.utf-8;
-					  export LC_ALL=en_US.utf-8;
+                      export LC_ALL=en_US.utf-8;
                       . $HOME/tf_rocm5_env/bin/activate;
-					  python $HOME/git_/ml-examples/tensorflow/hvd/tensorflow2_synthetic_benchmark.py --batch-size=256'
-					  # python $HOME/git_/ml-examples/tensorflow/hvd/tensorflow2_keras_synthetic_benchmark.py --batch-size=256'
+                      python $HOME/git_/ml-examples/tensorflow/hvd/tensorflow2_synthetic_benchmark.py --batch-size=256'
+                      # python $HOME/git_/ml-examples/tensorflow/hvd/tensorflow2_keras_synthetic_benchmark.py --batch-size=256'
 
 echo '' | cat - $0 | head -n -1  # copy the file content to the output
