@@ -37,6 +37,6 @@ with strategy.scope():
     model.compile(loss='mse', optimizer=opt)
 
 
-fit = model.fit(dataset)
+fit = model.fit(dataset, verbose=2)
 
 print(f'\n{model.trainable_variables}\n')
