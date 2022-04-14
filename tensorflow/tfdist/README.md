@@ -1,4 +1,4 @@
-[lumi-eap] `tf.distribute`
+## [lumi-eap] `tf.distribute`
 
 We are using here the image [amdih/tensorflow:rocm5.0-tf2.7-dev](https://www.amd.com/en/technologies/infinity-hub/tensorflow).
 
