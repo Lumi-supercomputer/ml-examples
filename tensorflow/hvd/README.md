@@ -16,9 +16,9 @@ nid000014:57586:57614 [0] NCCL INFO NET/IB : Using [0]mlx5_0:1/RoCE ; OOB nmn0:1
 nid000014:57586:57614 [0] NCCL INFO Using network IB
 ```
 
-The cotainer needs some setup before running
+The container needs some setup before running
 ```
-export SINGULARITY_BIND='/opt/cray/libfabric/1.11.0.4.106/lib64/libfabric.so.1:/ext_cray/libfabric.so.1,/opt/cray/pe/lib64/libpmi2.so.0:/ext_cray/libpmi2.so.0,/opt/cray/pe/mpich/8.1.8/ofi/gnu/9.1/lib/libmpi_gnu_91.so.12:/ext_cray/libmpi_gnu_91.so.12,/usr/lib64/liblustreapi.so:/ext_cray/liblustreapi.so,/usr/lib64/libatomic.so.1:/usr/lib64/libatomic.so.1,/usr/lib64/libpals.so.0:/usr/lib64/libpals.so.0,/etc/libibverbs.d:/etc/libibverbs.d,/usr/lib64/libibverbs.so.1:/usr/lib/libibverbs.so.1,/var/opt/cray:/var/opt/cray,/appl:/appl,/opt/cray:/opt/cray,/usr/lib64/librdmacm.so.1:/xext_cray/librdmacm.so.1,/lib64/libtinfo.so.6:/ext_cray/libtinfo.so.6,$HOME/software/openmpi-4.1.2-install:/ext_openmpi'
+export SINGULARITY_BIND='/opt/cray/libfabric/1.11.0.4.106/lib64/libfabric.so.1:/ext_cray/libfabric.so.1,/opt/cray/pe/lib64/libpmi2.so.0:/ext_cray/libpmi2.so.0,/opt/cray/pe/mpich/8.1.8/ofi/gnu/9.1/lib/libmpi_gnu_91.so.12:/ext_cray/libmpi_gnu_91.so.12,/usr/lib64/liblustreapi.so:/ext_cray/liblustreapi.so,/usr/lib64/libatomic.so.1:/usr/lib64/libatomic.so.1,/usr/lib64/libpals.so.0:/usr/lib64/libpals.so.0,/etc/libibverbs.d:/etc/libibverbs.d,/usr/lib64/libibverbs.so.1:/usr/lib/libibverbs.so.1,/var/opt/cray:/var/opt/cray,/appl:/appl,/opt/cray:/opt/cray,/usr/lib64/librdmacm.so.1:/xext_cray/librdmacm.so.1,/lib64/libtinfo.so.6:/ext_cray/libtinfo.so.6,${HOME}/software/openmpi-4.1.2-install:/ext_openmpi'
 ```
 The last mount is the OpenMPI install dir. That needs to be installed locally.
 
@@ -28,10 +28,10 @@ With or without it, the [rccl-test](https://github.com/ROCmSoftwarePlatform/rccl
 however tensorflow hangs.
 
 ```
-export SINGULARITYENV_LD_LIBRARY_PATH='/etc/libibverbs.d:/var/opt/cray/pe/pe_images/aocc-compiler/usr/lib64/libibverbs:/usr/lib64:/opt/cray/pe/lib64:/opt/gcc/10.2.0/snos/lib64:/ext_cray:/usr/lib64:/opt/cray/pe/lib64:/opt/cray/xpmem/2.2.40-2.1_3.9__g3cf3325.shasta/lib64:/ext_openmpi/lib:$LD_LIBRARY_PATH'
+export SINGULARITYENV_LD_LIBRARY_PATH='/etc/libibverbs.d:/var/opt/cray/pe/pe_images/aocc-compiler/usr/lib64/libibverbs:/usr/lib64:/opt/cray/pe/lib64:/opt/gcc/10.2.0/snos/lib64:/ext_cray:/usr/lib64:/opt/cray/pe/lib64:/opt/cray/xpmem/2.2.40-2.1_3.9__g3cf3325.shasta/lib64:/ext_openmpi/lib:${LD_LIBRARY_PATH}'
 ```
 
-The container needs to be run with `mpirun`, which needs to be installed locally
+The container needs to be run with OpenMPI's `mpirun`, which needs to be installed locally
 ```bash
 mpirun singularity exec tensorflow_rocm4.2-tf2.5-dev.sif python tensorflow2_synthetic_benchmark.py --batch-size=128
 ```
@@ -51,7 +51,26 @@ salloc -peap -N2 -Aproject_462000002 --gres=gpu:mi100:2 --time 1:00:00 --ntasks-
 ```
 This gives the right number of ranks per node.
 
-### Example: horovod - [`tensorflow2_synthetic_benchmark.py`](https://github.com/horovod/horovod/blob/19f2f2119db34b1be0d9f9aedb66106c9131da89/examples/tensorflow2/tensorflow2_synthetic_benchmark.py) - ResNet50 - batch-size=128
+All the steps have been put together on the batch script [run-singularity.sh](run-singularity.sh). The horovd scripts used the are
+[tensorflow2_synthetic_benchmark.py](https://raw.githubusercontent.com/horovod/horovod/v0.24.2/examples/tensorflow2/tensorflow2_synthetic_benchmark.py) and
+[tensorflow2_keras_synthetic_benchmark.py](https://raw.githubusercontent.com/horovod/horovod/v0.24.2/examples/tensorflow2/tensorflow2_keras_synthetic_benchmark.py).
+There we use the image `amdih/tensorflow:rocm5.0-tf2.7-dev`.
+
+In some cases, since the data is always the same, the computations are cached and the performance results do not make
+sense. That can be solved by creating the random data in every iteration:
+```patch
+66,67c66,67
+< data = tf.random.uniform([args.batch_size, 224, 224, 3])
+< target = tf.random.uniform([args.batch_size, 1], minval=0, maxval=999, dtype=tf.int64)
+---
+> # data = tf.random.uniform([args.batch_size, 224, 224, 3])
+> # target = tf.random.uniform([args.batch_size, 1], minval=0, maxval=999, dtype=tf.int64)
+76a77,78
+>         data = tf.random.uniform([args.batch_size, 224, 224, 3])
+>         target = tf.random.uniform([args.batch_size, 1], minval=0, maxval=999, dtype=tf.int64)```
+```
+
+### Example: horovod - [`tensorflow2_synthetic_benchmark.py`](https://raw.githubusercontent.com/horovod/horovod/v0.24.2/examples/tensorflow2/tensorflow2_synthetic_benchmark.py) - ResNet50 - batch-size=128
 
 | Nodes / GPU-node |       1      |       2       |        4       |
 |:------------:|:----------------:|:-------------:|:--------------:|
@@ -61,11 +80,6 @@ This gives the right number of ranks per node.
 
 ### Notes
  - Had to pip install `psutil` and `cloudpickle` since the container didn't have it.
- - In some cases with ResNet50, there's a rocblas error when using a batch size of 256. It could eaily be because of a too large batch:
- ```bash
- failed to run ROCBLAS routine rocblas_sgemm: rocblas_status_internal_error
- ```
-
 
 ## [grenoble] Running a horovod example within a container 
 We are using the image [rocm/tensorflow:rocm4.1-tf2.3-dev](https://hub.docker.com/layers/rocm/tensorflow/rocm4.1-tf2.3-dev/images/sha256-0f369142a95872bef829fc61256a628828e0427284ff8f2f8d1f821023aa5b4c?context=explore) and running with singularity.
