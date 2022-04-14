@@ -56,6 +56,20 @@ All the steps have been put together on the batch script [run-singularity.sh](ru
 [tensorflow2_keras_synthetic_benchmark.py](https://raw.githubusercontent.com/horovod/horovod/v0.24.2/examples/tensorflow2/tensorflow2_keras_synthetic_benchmark.py).
 There we use the image `amdih/tensorflow:rocm5.0-tf2.7-dev`.
 
+In some cases, since the data is always the same, the computations are cached and the performance results do not make
+sense. That can be solved by creating the random data in every iteration:
+```patch
+66,67c66,67
+< data = tf.random.uniform([args.batch_size, 224, 224, 3])
+< target = tf.random.uniform([args.batch_size, 1], minval=0, maxval=999, dtype=tf.int64)
+---
+> # data = tf.random.uniform([args.batch_size, 224, 224, 3])
+> # target = tf.random.uniform([args.batch_size, 1], minval=0, maxval=999, dtype=tf.int64)
+76a77,78
+>         data = tf.random.uniform([args.batch_size, 224, 224, 3])
+>         target = tf.random.uniform([args.batch_size, 1], minval=0, maxval=999, dtype=tf.int64)```
+```
+
 ### Example: horovod - [`tensorflow2_synthetic_benchmark.py`](https://raw.githubusercontent.com/horovod/horovod/v0.24.2/examples/tensorflow2/tensorflow2_synthetic_benchmark.py) - ResNet50 - batch-size=128
 
 | Nodes / GPU-node |       1      |       2       |        4       |
