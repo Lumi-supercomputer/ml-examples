@@ -9,60 +9,38 @@ with singularity. It can be pulled with
 singularity pull docker://amdih/pytorch:rocm4.2_ubuntu18.04_py3.6_pytorch_1.9.0
 ```
 
-See the [singularity setup for tensorflow+hvd](hvd/README.md).
-
 It doesn't need to be run with `mpirun`.
+
 With `torch.distributed`, one needs 1 rank per node.
 The multiple GPUs within a node, are handled by that one rank.
+
+In the [batch script](run-singularity.sh) there is some setup for singularity although it doesn't seem to
+always be necessary. With the exports, NCCL finds
 ```
-#!/bin/bash -l
-
-#SBATCH --job-name=test-pt
-#SBATCH --time=00:10:00
-#SBATCH --nodes=2
-#SBATCH --ntasks-per-core=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --partition=eap
-#SBATCH --account=project_462000002
-#SBATCH --gres=gpu:mi100:4
-
-# export MASTER_ADDR=$(scontrol show hostname $SLURM_NODELIST | head -n1)
-
-export NCCL_DEBUG=INFO
-export SINGULARITY_BIND='/opt/cray/libfabric/1.11.0.4.106/lib64/libfabric.so.1:/ext_cray/libfabric.so.1,/opt/cray/pe/lib64/libpmi2.so.0:/ext_cray/libpmi2.so.0,/opt/cray/pe/mpich/8.1.8/ofi/gnu/9.1/lib/libmpi_gnu_91.so.12:/ext_cray/libmpi_gnu_91.so.12,/usr/lib64/liblustreapi.so:/ext_cray/liblustreapi.so,/usr/lib64/libatomic.so.1:/usr/lib64/libatomic.so.1,/usr/lib64/libpals.so.0:/usr/lib64/libpals.so.0,/etc/libibverbs.d:/etc/libibverbs.d,/usr/lib64/libibverbs.so.1:/usr/lib/libibverbs.so.1,/var/opt/cray:/var/opt/cray,/appl:/appl,/opt/cray:/opt/cray,/usr/lib64/librdmacm.so.1:/ext_cray/librdmacm.so.1,/lib64/libtinfo.so.6:/ext_cray/libtinfo.so.6,/usr/lib64/libibverbs.so.1:/usr/lib/x86_64-linux-gnu/libibverbs.so.1'
-export SINGULARITYENV_LD_LIBRARY_PATH='/etc/libibverbs.d:/var/opt/cray/pe/pe_images/aocc-compiler/usr/lib64/libibverbs:/usr/lib64:/opt/cray/pe/lib64:/opt/gcc/10.2.0/snos/lib64:/ext_cray:/usr/lib64:/opt/cray/pe/lib64:/opt/cray/xpmem/2.2.40-2.1_3.9__g3cf3325.shasta/lib64:$LD_LIBRARY_PATH'
-
-srun singularity exec pytorch_rocm4.2_ubuntu18.04_py3.6_pytorch_1.9.0.sif python cnn_distr.py
+nid000012:86554:86554 [0] NCCL INFO NET/IB : Using [0]mlx5_0:1/RoCE ; OOB nmn0:10.252.1.69<0>
 ```
-The test above is a CNN from [cnn_distr.py](https://github.com/eth-cscs/pytorch-training/blob/master/cnn_synthetic_benchmark/cnn_distr.py).
+which is what's expected. With no exports, NCCL finds
+```
+nid000012:86066:86066 [0] NCCL INFO NET/Socket : Using [0]nmn0:10.252.1.69<0> [1]hsn0:10.253.6.188<0>
+```
+However, the throughput in both cases are very close.
+With no exports, there is the message in the output
+```
+libibverbs: Warning: couldn't open config directory '/etc/libibverbs.d'.
+```
 
-He it's necessary to add `/usr/lib64/libibverbs.so.1:/usr/lib/x86_64-linux-gnu/libibverbs.so.1` in the `SINGULARITY_BIND`. That wasn't
+It's necessary to add `/usr/lib64/libibverbs.so.1:/usr/lib/x86_64-linux-gnu/libibverbs.so.1` in the `SINGULARITY_BIND`. That wasn't
 necessary with the tensorflow+hvd container. Also, there's no need to mount any openmpi libraries.
 
-For the distribution setup, something like this can be used:
-```python
-import os
-import subprocess
-import hostlist
-
-
-def setup_distr_env():
-    os.environ['MASTER_PORT'] = '39591'
-    os.environ['WORLD_SIZE'] = os.environ['SLURM_NNODES']
-    os.environ['LOCAL_RANK'] = os.environ['SLURM_LOCALID']
-    os.environ['RANK'] = os.environ['SLURM_PROCID']
-    # node_list = os.environ['SLURM_NODELIST']
-    # master_node = subprocess.getoutput(
-    #     f'scontrol show hostname {node_list} | head -n1'
-    # )
-    # os.environ['MASTER_ADDR'] = master_node
-    hostnames = hostlist.expand_hostlist(os.environ['SLURM_JOB_NODELIST'])
-    os.environ['MASTER_ADDR'] = hostnames[0]
-```
+`torch.distributed` needs some setup before starting. All that's needed has been put together in [pt_distr_env.py](pt_distr_env.py).
 That needs the [`python-hostlist`](https://pypi.org/project/python-hostlist) package.
-If it's not available, once can get the `MASTER_ADDR` from
+
+If `python-hostlist` is not available, `MASTER_ADDR` can be obtained from
 ```
 scontrol show hostname $SLURM_NODELIST | head -n1
 ```
-When using a container, `scontrol` is not available. `MASTER_ADDR` needs to be defined on the batch script as in
-the commented line above.
+When using a container, `scontrol` is not available. `MASTER_ADDR` needs to be defined on the batch script with
+```bash
+export MASTER_ADDR=$(scontrol show hostname $SLURM_NODELIST | head -n1)
+```
+and adapt [pt_distr_env.py](pt_distr_env.py) accordingly.
