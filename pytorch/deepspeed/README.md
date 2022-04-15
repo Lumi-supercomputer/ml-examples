@@ -10,7 +10,7 @@ pip install --user datasets
 pip install --user transformers
 pip install rich   # only for the script we use
 
-# For the torch.distributed custom init script.
+# For the torch.distributed custom init script (not used here)
 pip install --user python-hostlist
 ```
 
@@ -19,28 +19,8 @@ Deepspeed scripts are run with a rank per GPU.
 We run the script [`bert_squad_deepspeed.py`](https://github.com/eth-cscs/pytorch-training/blob/master/bert_squad/bert_squad_deepspeed.py).
 Other files there are needed, so it's better to have all the conteent in the directory
 [`pytorch-training/bert_squad`](https://github.com/eth-cscs/pytorch-training/tree/master/bert_squad).
-The content of `pt_distr_env.py` should be replaced with:
-```python
-import os
-# import subprocess
-import hostlist
-
-def setup_distr_env():
-    os.environ['MASTER_PORT'] = '39591'
-    os.environ['WORLD_SIZE'] = os.environ['SLURM_NNODES']
-    os.environ['LOCAL_RANK'] = os.environ['SLURM_LOCALID']
-    os.environ['RANK'] = os.environ['SLURM_PROCID']
-    # node_list = os.environ['SLURM_NODELIST']
-    # master_node = subprocess.getoutput(
-    #     f'scontrol show hostname {node_list} | head -n1'
-    # )
-    # os.environ['MASTER_ADDR'] = master_node
-    hostnames = hostlist.expand_hostlist(os.environ['SLURM_JOB_NODELIST'])
-    os.environ['MASTER_ADDR'] = hostnames[0]
-```
 
 ### The data
-
 The data can be downloaded from the internet and then it needs to be put inside a directory called `cache/data` at the same level
 where the script will run:
 ```bash
