@@ -66,9 +66,3 @@ scontrol show hostname $SLURM_NODELIST | head -n1
 ```
 When using a container, `scontrol` is not available. `MASTER_ADDR` needs to be defined on the batch script as in
 the commented line above.
-
-```bash
-wget https://rajpurkar.github.io/SQuAD-explorer/dataset/train-v1.1.json
-wget https://rajpurkar.github.io/SQuAD-explorer/dataset/dev-v1.1.json
-mv train-v1.1.json dev-v1.1.json cache/data
-```
