@@ -16,4 +16,4 @@ export SINGULARITYENV_LD_LIBRARY_PATH="/etc/libibverbs.d:/var/opt/cray/pe/pe_ima
 srun singularity exec $SCRATCH/pytorch_rocm4.2_ubuntu18.04_py3.6_pytorch_1.9.0.sif \
                  bash -c '
                  cd $HOME/git_/ml-examples/pytorch/ptdist
-	             python cnn_distr.py'
+		 python cnn_distr.py'
