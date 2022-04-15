@@ -18,7 +18,8 @@ Deepspeed scripts are run with a rank per GPU.
 
 We run the script [`bert_squad_deepspeed.py`](https://github.com/eth-cscs/pytorch-training/blob/master/bert_squad/bert_squad_deepspeed.py).
 Other files there are needed, so it's better to have all the conteent in the directory
-`https://github.com/eth-cscs/pytorch-training/tree/master/bert_squad`. The content of `pt_distr_env.py` should be replaced with:
+[`pytorch-training/bert_squad`](https://github.com/eth-cscs/pytorch-training/tree/master/bert_squad).
+The content of `pt_distr_env.py` should be replaced with:
 ```python
 import os
 # import subprocess
