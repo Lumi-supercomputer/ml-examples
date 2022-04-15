@@ -66,3 +66,47 @@ nid000013:32994:32994 [0] NCCL INFO NET/IB : Using [0]mlx5_0:1/RoCE ; OOB nmn0:1
 ```
 With 8 GPUs the training and evaluation together take around 9 minutes. The training runs at about 548 samples/sec.
 At the end it shows QA examples with the answers highlighted withing the paragrahps.
+
+### Mixed Precision
+With the config
+```json
+{
+    "train_batch_size": 512,
+    "gradient_accumulation_steps": 1,
+    "steps_per_print": 10,
+    "optimizer": {
+        "type": "AdamW",
+        "params": {
+            "lr": 5e-05
+        }
+    },
+    "fp16": {
+        "enabled": true
+    }
+}
+```
+which enables the mixed precision training (which in turns allows for a larger batch size), the throughput can be increased to around 1200 samples/sec.
+This reduced the run time to around 5 minutes. Keeping the same batch size of 256 as before, the throughput is arounf 1000 images/sec.
+
+### ZeRO
+The ZeRO optimization stage 2, can be enabled with
+```json
+{
+    "train_batch_size": 512,
+    "gradient_accumulation_steps": 1,
+    "steps_per_print": 10,
+    "optimizer": {
+        "type": "AdamW",
+        "params": {
+            "lr": 5e-05
+        }
+    },
+    "fp16": {
+        "enabled": true
+    },
+    "zero_optimization": {
+        "stage": 2
+    }
+}
+```
+This is not really needed but it keeps the same throughput as before (~1240 images/sec)
