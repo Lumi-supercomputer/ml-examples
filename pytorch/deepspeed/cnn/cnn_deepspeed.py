@@ -13,6 +13,8 @@ from torchvision import models
 parser = argparse.ArgumentParser(description='PyTorch Synthetic Benchmark')
 parser.add_argument('--model', type=str, default='resnet50',
                     help='Name of the model from torchvision')
+parser.add_argument('--num-iters', type=int, default=50,
+                    help='number of benchmark iterations')
 parser = deepspeed.add_config_arguments(parser)
 args = parser.parse_args()
 
@@ -20,9 +22,7 @@ args = parser.parse_args()
 with open('ds_config.json') as fp:
      ds_config = json.load(fp)
 
-batch_size_per_gpu = ds_config['train_batch_size']
-num_iters = 50
-ngpus = int(os.environ['SLURM_NNODES']) * torch.cuda.device_count()
+train_batch_size = ds_config['train_batch_size']
 
 model = getattr(models, args.model)()
 
@@ -33,7 +33,7 @@ class SyntheticDataset(Dataset):
         return (data, target)
 
     def __len__(self):
-        return batch_size_per_gpu * ngpus * num_iters
+        return train_batch_size * args.num_iters
 
 
 train_set = SyntheticDataset()
