@@ -23,7 +23,7 @@ pip install --user --upgrade deepspeed
 ```
 
 ### Running a BERT SquadQA fine-tuning with DeepSpeed
-Deepspeed scripts are run with a rank per GPU.
+Deepspeed scripts are run with a rank per GPU and they need to be launched with OpenMPI's `mpirun` (an OpenMPI installation is required in the system).
 
 We run the script [`bert_squad_deepspeed.py`](https://github.com/eth-cscs/pytorch-training/blob/master/bert_squad/bert_squad_deepspeed.py).
 Other files there are needed (`dataset_utils.py`, `ds_config.json` and `eval_utils.py`), so it's easier to clone the repo to have all the
@@ -51,7 +51,8 @@ For that, it's necessary to set `datasets` and `huggingface` to work offline.
 That's done by setting `TRANSFORMERS_OFFLINE=1` and `HF_DATASETS_OFFLINE=1`.
 With 8 GPUs, which needs 8 ranks, it can be run like this
 (the batch size should be changed first to 256 [here](https://github.com/eth-cscs/pytorch-training/blob/2e623d1b3b56f37f94c4a28d8671b491ebf39f77/bert_squad/ds_config.json#L2)
-to take advantage of the 8 GPUs):
+to take advantage of the 8 GPUs).
+
 ```bash
 salloc -peap -N2 -Aproject_462000002 --gres=gpu:mi100:4 --time 1:00:00 --ntasks-per-node=4
 
