@@ -10,7 +10,7 @@ Deepspeed is already installed there. To run BERT it needs only a few packages m
 MPICC=mpicc pip install --user mpi4py  # probably `MPICC=mpicc` is not needed here
 pip install --user datasets
 pip install --user transformers
-pip install rich   # only for the script we use
+pip install --user rich   # only for the script we use
 
 # For the torch.distributed custom init script (not used here)
 pip install --user python-hostlist
