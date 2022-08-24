@@ -12,7 +12,9 @@ When running with Horovod, one has to set one rank per GPU. Doesn't matter wheth
 or multiple GPUs over multiple nodes.
 
 With the batch script [`run-singularity-aws.sh`](run-singularity-aws.sh), the container can be run using the
-[aws-ofi-rccl](https://github.com/ROCmSoftwarePlatform/aws-ofi-rccl) plugin.
+[aws-ofi-rccl](https://github.com/ROCmSoftwarePlatform/aws-ofi-rccl) plugin. It requires the to install the `aws-ofi-rccl` plugin and `rccl` with
+EasyBuild. Please, find the recipes on the
+[repository](https://github.com/Lumi-supercomputer/LUMI-EasyBuild-contrib/blob/main/easybuild/easyconfigs) (same as above for OpenMPI).
 
 ## Notes
 In some cases, since the data is always the same, the computations are cached and the performance results do not make
