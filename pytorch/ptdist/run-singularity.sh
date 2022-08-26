@@ -13,4 +13,4 @@ export NCCL_DEBUG=INFO
 export NCCL_SOCKET_IFNAME=hsn0
 export NCCL_NET_GDR_LEVEL=3
 
-srun singularity exec deepspeed_rocm5.0.1_ubuntu18.04_py3.7_pytorch_1.10.0.sif bash python cnn_distr.py
+srun singularity exec deepspeed_rocm5.0.1_ubuntu18.04_py3.7_pytorch_1.10.0.sif python cnn_distr.py
