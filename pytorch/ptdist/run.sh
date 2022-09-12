@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=cnn-pytorch
 #SBATCH --ntasks=4
-#SBATCH --ntasks-per-node=1
+#SBATCH --ntasks-per-node=8
 #SBATCH --gpus-per-node=8
 #SBATCH --time=0:10:0
 #SBATCH --partition gpu
