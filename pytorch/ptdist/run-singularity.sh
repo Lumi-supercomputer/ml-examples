@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=cnn-pytorch
 #SBATCH --ntasks=4
-#SBATCH --ntasks-per-node=1
+#SBATCH --ntasks-per-node=8
 #SBATCH --gpus-per-node=8
 #SBATCH --time=0:10:0
 #SBATCH --partition gpu
@@ -9,6 +9,8 @@
 
 module load LUMI/22.08
 module load partition/G
+module load OpenMPI
+
 export NCCL_DEBUG=INFO
 export NCCL_SOCKET_IFNAME=hsn0
 export NCCL_NET_GDR_LEVEL=3
