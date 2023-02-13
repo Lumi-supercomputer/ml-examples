@@ -24,6 +24,6 @@ export SINGULARITYENV_LD_LIBRARY_PATH=/openmpi/lib:/opt/rocm-5.4.1/lib:${EBROOTA
 
 mpirun -np 32 singularity exec -B"/appl:/appl" \
                                -B"$SCRATCH:$SCRATCH" \
-							   --pwd $HOME/git_/ml-examples/tensorflow/hvd \
+                               --pwd $HOME/git_/ml-examples/tensorflow/hvd \
                                $SCRATCH/tensorflow_rocm5.4.1-tf2.10-dev.sif bash -c \
 							   ". tf-rocm5.4.1-env/bin/activate; python tensorflow2_synthetic_benchmark.py --batch-size=512"
