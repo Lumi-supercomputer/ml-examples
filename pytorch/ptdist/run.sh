@@ -1,16 +1,28 @@
 #!/bin/bash
-#SBATCH --job-name=cnn-pytorch
-#SBATCH --ntasks=4
+#SBATCH --job-name=pt-cnn
+#SBATCH --ntasks=32
 #SBATCH --ntasks-per-node=8
-#SBATCH --gpus-per-node=8
 #SBATCH --time=0:10:0
-#SBATCH --partition gpu
-#SBATCH --account=<account>
+#SBATCH --exclusive
+#SBATCH --partition standard-g
+#SBATCH --account=<project>
+#SBATCH --gpus-per-node=8
 
 module load LUMI/22.08
 module load partition/G
-module load PyTorch
-export NCCL_SOCKET_IFNAME=hsn0,hsn1,hsn2,hsn3
-export NCCL_NET_GDR_LEVEL=3
+module load singularity-bindings
+module load aws-ofi-rccl
 
-srun python cnn_distr.py
+export NCCL_DEBUG=INFO
+export NCCL_SOCKET_IFNAME=hsn
+export NCCL_NET_GDR_LEVEL=3
+export MIOPEN_USER_DB_PATH=/tmp/${USER}-miopen-cache-${SLURM_JOB_ID}
+export MIOPEN_CUSTOM_CACHE_DIR=${MIOPEN_USER_DB_PATH}
+export CXI_FORK_SAFE=1
+export CXI_FORK_SAFE_HP=1
+export FI_CXI_DISABLE_CQ_HUGETLB=1
+export SINGULARITYENV_LD_LIBRARY_PATH=/opt/ompi/lib:${EBROOTAWSMINOFIMINRCCL}/lib:/opt/cray/xpmem/2.4.4-2.3_9.1__gff0e1d9.shasta/lib64:${SINGULARITYENV_LD_LIBRARY_PATH}
+
+srun singularity exec -B"/appl:/appl" \
+                      -B"$SCRATCH:$SCRATCH" \
+					  $SCRATCH/pytorch_rocm5.4.1_ubuntu20.04_py3.7_pytorch_1.12.1.sif python cnn_distr.py
