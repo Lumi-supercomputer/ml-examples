@@ -89,6 +89,13 @@ NCCL INFO NET/OFI Selected Provider is cxi
 ```
 should appear in the output.
 
+To make available the libraries needed for the inter-node communication on LUMI, a number of libraries must be mounted in the container. That has been taken care with the module `singularity-bindings`. It can be installed with EasyBuild:
+```bash
+module load LUMI/22.08 partition/G
+module load EasyBuild-user
+eb singularity-bindings-system-cpeGNU-22.08.eb -r
+```
+
 After running the script above, the output should include something like this
 ```bash
  * Rank 0 - Epoch  1: 212.39 images/sec per GPU
