@@ -25,7 +25,7 @@ export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
 
 srun singularity exec -B"/appl:/appl" \
                       -B"$SCRATCH:$SCRATCH" \
-					  -B slurm_cluster_resolver.py:/usr/local/lib/python3.9/dist-packages/tensorflow/python/distribute/cluster_resolver/slurm_cluster_resolver.py \
+                      -B slurm_cluster_resolver.py:/usr/local/lib/python3.9/dist-packages/tensorflow/python/distribute/cluster_resolver/slurm_cluster_resolver.py \
                       --pwd $HOME/git_/ml-examples/tensorflow/tfdist \
-                      $SCRATCH/tensorflow_rocm5.4.1-tf2.10-dev.sif bash -c \
-                      ". tf-rocm5.4.1-env/bin/activate; python tf2_distr_synthetic_benchmark.py --batch-size=256"
+                      $SCRATCH/tensorflow_rocm5.4.1-tf2.10-dev.sif \
+                      python tf2_distr_synthetic_benchmark.py --batch-size=256
