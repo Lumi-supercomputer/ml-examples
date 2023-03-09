@@ -25,4 +25,5 @@ export SINGULARITYENV_LD_LIBRARY_PATH=/opt/ompi/lib:${EBROOTAWSMINOFIMINRCCL}/li
 
 srun singularity exec -B"/appl:/appl" \
                       -B"$SCRATCH:$SCRATCH" \
-					  $SCRATCH/pytorch_rocm5.4.1_ubuntu20.04_py3.7_pytorch_1.12.1.sif python cnn_distr.py
+		      $SCRATCH/pytorch_rocm5.4.1_ubuntu20.04_py3.7_pytorch_1.12.1.sif \
+		      bash -c ". ~/pt_rocm5.4.1_env/bin/activate; python cnn_distr.py"
