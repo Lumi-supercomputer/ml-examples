@@ -64,8 +64,6 @@ module load LUMI/22.08 partition/G
 module load singularity-bindings
 module load aws-ofi-rccl
 
-. ~/pt_rocm5.4.1_env/bin/activate
-
 export NCCL_SOCKET_IFNAME=hsn
 export NCCL_NET_GDR_LEVEL=3
 export MIOPEN_USER_DB_PATH=/tmp/${USER}-miopen-cache-${SLURM_JOB_ID}
@@ -77,7 +75,8 @@ export SINGULARITYENV_LD_LIBRARY_PATH=/opt/ompi/lib:${EBROOTAWSMINOFIMINRCCL}/li
 
 srun singularity exec -B"/appl:/appl" \
                       -B"$SCRATCH:$SCRATCH" \
-                      $SCRATCH/pytorch_rocm5.4.1_ubuntu20.04_py3.7_pytorch_1.12.1.sif python cnn_distr.py
+                      $SCRATCH/pytorch_rocm5.4.1_ubuntu20.04_py3.7_pytorch_1.12.1.sif \
+                      bash -c ". ~/pt_rocm5.4.1_env/bin/activate; python cnn_distr.py"
 ```
 Here we have used a few environment variables. The ones starting with `NCCL_` and `CXI_`, as well as `FI_CXI_DISABLE_CQ_HUGETLB` are used by RCCL for the communication over Slingshopt. The `MIOPEN_` ones are needed to make [MIOpen](https://rocmsoftwareplatform.github.io/MIOpen/doc/html/index.html) create its caches on `/tmp`. Finally, with `SINGULARITYENV_LD_LIBRARY_PATH` some directories are included in the container's `LD_LIBRARY_PATH`. This is important for RCCL to find the `aws-ofi-rccl` plugin. In addition, `NCCL_DEBUG=INFO`, can be used to increase RCCL's logging level to make sure that the `aws-ofi-rccl` plugin is being used: The lines
 ```bash
